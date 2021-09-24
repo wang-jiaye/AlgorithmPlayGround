@@ -24,21 +24,20 @@ class Point {
 
 class Disc {
     public:
-        float x, y, radius;
+        float x, y, r;
 
         Disc() {}
 
-        Disc(float x_, float y_, float radius_) {
-            x = x_, y = y_, radius = radius_;
+        Disc(float x_, float y_, float r_) {
+            x = x_, y = y_, r = r_;
         }
 
         bool isInside(Point p) {
             float dist = sqrt(pow(x - p.x, 2) + pow(y - p.y, 2) * 1.0);
-            return dist <= radius;
+            return dist <= r;
         }
 };
 
-int n;
 vector<Disc> D;
 
 /**
@@ -47,14 +46,11 @@ vector<Disc> D;
  * @return: a Disc object with center (x,y) and radius
  */
 Disc makeDiscWith2Points(Point p1, Point p2) {
-    float dx, dy, x, y, r;
+    float cx, cy;
 
-    dx = fabs(p1.x - p2.x);
-    dy = fabs(p1.y - p2.y);
-    x = min(p1.x, p2.x) + dx / 2.0;
-    y = min(p1.y, p2.y) + dy / 2.0;
-    r = sqrt(dx * dx + dy * dy) / 2.0;
-    return Disc(x, y, r);
+    cx = (p1.x + p2.x) * .5;
+    cy = (p1.y + p2.y) * .5;
+    return Disc(cx, cy, sqrt((p1.x-cx) * (p1.x-cx) + (p1.y-cy) * (p1.y-cy)));
 }
 
 /**
@@ -79,6 +75,7 @@ Disc makeDiscWith3Point (Point p1, Point p2, Point p3) {
 
 
 Disc miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
+    int n = pts.size();
     D[0] = makeDiscWith2Points(q1, q2);
     for (int i = 0; i < n; ++i) {
         if (D[i].isInside(pts[i])) {
@@ -91,6 +88,7 @@ Disc miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
 }
 
 Disc miniDiscWithPoint(vector<Point> pts, Point q) {
+    int n = pts.size();
     D[0] = makeDiscWith2Points(pts[0], q);
     for (int i = 1; i < n; ++i) {
         if (D[i-1].isInside(pts[i])) 
@@ -105,6 +103,7 @@ Disc miniDiscWithPoint(vector<Point> pts, Point q) {
 
 
 Disc miniDisc(vector<Point> pts) {
+    int n = pts.size();
     D[1] = makeDiscWith2Points(pts[0], pts[1]);
     for (int i = 2; i < n; ++i) {
         if (D[i-1].isInside(pts[i])) 
@@ -120,10 +119,11 @@ Disc miniDisc(vector<Point> pts) {
 
 int main(int argc, char *argv[]) {
     srand((unsigned int) time (NULL));
+    int n;
 
     n = atoi(argv[1]);
     vector<Point> pts;
-    D.resize(n);
+    D.resize(101);
 
     for (int i = 0; i < n; ++i) {
         float x = rand() % 100, y = rand() % 100;
@@ -134,8 +134,7 @@ int main(int argc, char *argv[]) {
         printf("(%.1f,%.1f),", pts[i].x, pts[i].y);
     printf("\n");
     Disc ans = miniDisc(pts);
-    printf("Disc center: (%.3f, %.3f). Radius: %.3f\n", ans.x, ans.y, ans.radius);
+    printf("Disc formula: (x-%.3f)^2+(y-%.3f)^2=%.3f^2\n", ans.x, ans.y, ans.r);
 
     cout << "Done :)\n";
 }
-
