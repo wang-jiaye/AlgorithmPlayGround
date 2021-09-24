@@ -79,10 +79,15 @@ Disc makeDiscWith3Point (Point p1, Point p2, Point p3) {
 
 
 Disc miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
+    D[0] = makeDiscWith2Points(q1, q2);
     for (int i = 0; i < n; ++i) {
-
+        if (D[i].isInside(pts[i])) {
+            D[i+1] = D[i];
+        } else {
+            D[i+1] = makeDiscWith3Point(q1, q2, pts[i]);
+        }
     }
-    return D[n];
+    return D[n-1];
 }
 
 Disc miniDiscWithPoint(vector<Point> pts, Point q) {
@@ -124,12 +129,12 @@ int main(int argc, char *argv[]) {
         float x = rand() % 100, y = rand() % 100;
         pts.push_back(Point(x, y));
     }
-    miniDisc(pts);
 
-    Point p1 = Point(83,87);
-    Point p2 = Point(34,37);
-    Point p3 = Point(45,67);
-    makeDiscWith3Point(p1, p2, p3);
+    for (int i = 0; i < n; ++i) 
+        printf("(%.1f,%.1f),", pts[i].x, pts[i].y);
+    printf("\n");
+    Disc ans = miniDisc(pts);
+    printf("Disc center: (%.3f, %.3f). Radius: %.3f\n", ans.x, ans.y, ans.radius);
 
     cout << "Done :)\n";
 }
