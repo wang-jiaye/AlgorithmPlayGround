@@ -2,8 +2,7 @@
 // @Author: Jiaye William Wang
 // @Create At: September 23, 2021 13:05:21
 // @Description: C++ implementation of the smallest enclosing discs algorithm 
-// from chapter 4.7 in de Berg's Computational Geometry: Algorithms and 
-// Applications. 
+// from chapter 4.7 in de Berg's Computational Geometry: Algorithms and Applications. 
 
 #include <iostream>
 #include <vector>
@@ -23,19 +22,16 @@ class Point {
         }
 };
 
-class Discs {
+class Disc {
     public:
         float x, y, radius;
-        Discs() {}
-        Discs(float x_, float y_, float radius_) {
+
+        Disc() {}
+
+        Disc(float x_, float y_, float radius_) {
             x = x_, y = y_, radius = radius_;
         }
 
-        /**
-         * check point p is inside the discs
-         * @param: a Point object, p
-         * @return: true if p inside the discs, false otherwise
-         */
         bool isInside(Point p) {
             float dist = sqrt(pow(x - p.x, 2) + pow(y - p.y, 2) * 1.0);
             return dist <= radius;
@@ -43,40 +39,74 @@ class Discs {
 };
 
 int n;
-vector<Discs> D;
+vector<Disc> D;
 
-Discs makeDiscWith2Points(Point p1, Point p2) {
-    float dx = fabs(p1.x - p2.x), dy = fabs(p1.y - p2.y);
-    float radius = sqrt(dx * dx + dy * dy) / 2.0;
-    float x = min(p1.x, p2.x) + dx / 2.0, y = min(p1.y, p2.y) + dy / 2.0;
-    return Discs(x, y, radius);
+/**
+ * Make a disc that passes over two points.
+ * @params: two Points object
+ * @return: a Disc object with center (x,y) and radius
+ */
+Disc makeDiscWith2Points(Point p1, Point p2) {
+    float dx, dy, x, y, r;
+
+    dx = fabs(p1.x - p2.x);
+    dy = fabs(p1.y - p2.y);
+    x = min(p1.x, p2.x) + dx / 2.0;
+    y = min(p1.y, p2.y) + dy / 2.0;
+    r = sqrt(dx * dx + dy * dy) / 2.0;
+    return Disc(x, y, r);
 }
 
-Discs makeDiscWith3Point (Point p1, Point p2, Point p3) {
+/**
+ * Make a disc that passes over three points. 
+ * Reference: http://paulbourke.net/geometry/circlesphere/
+ * @params: three Point object
+ * @return: a Disc object with center (x,y) and radius
+ */
+Disc makeDiscWith3Point (Point p1, Point p2, Point p3) {
+    float ma, mb, x, y, r;
+    float x1, y1, x2, y2, x3, y3;
 
+    x1 = p1.x, y1 = p1.y, x2 = p2.x, y2 = p2.y, x3 = p3.x, y3 = p3.y;
+
+    ma = (y2 - y1) / (x2 - x1);
+    mb = (y3 - y2) / (x3 - x2);
+    x = (ma * mb * (y1 - y3) + mb * (x1 + x2) - ma * (x2 + x3)) / (2 * (mb - ma));
+    y = -(x - (p1.x + p2.x) / 2) / ma + (p1.y + p2.y) / 2;
+    r = sqrt(pow(x - x1, 2) + pow(y - y1, 2) * 1.0);
+    return Disc(x, y, r);
 }
 
-Discs miniDiscWithPoint(vector<Point> pts, Point q) {
-    for (int i = 1; i < n; ++i) {
 
-    }
-}
-
-void miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
+Disc miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
     for (int i = 0; i < n; ++i) {
 
     }
+    return D[n];
+}
+
+Disc miniDiscWithPoint(vector<Point> pts, Point q) {
+    D[0] = makeDiscWith2Points(pts[0], q);
+    for (int i = 1; i < n; ++i) {
+        if (D[i-1].isInside(pts[i])) 
+            D[i] = D[i-1];
+        else {
+            vector<Point> next(pts.begin(), pts.end() + i);
+            D[i] = miniDiscWith2Point(next, pts[i], q);
+        }
+    }
+    return D[n-1];
 }
 
 
-Discs miniDisc(vector<Point> pts) {
+Disc miniDisc(vector<Point> pts) {
     D[1] = makeDiscWith2Points(pts[0], pts[1]);
     for (int i = 2; i < n; ++i) {
         if (D[i-1].isInside(pts[i])) 
             D[i] = D[i-1];
         else {
-            auto next = 
-            D[i] = miniDiscWithPoint(pts, pts[i]);
+            vector<Point> next(pts.begin(), pts.begin() + i);
+            D[i] = miniDiscWithPoint(next, pts[i]);
         }
     }
     return D[n-1];
@@ -95,4 +125,12 @@ int main(int argc, char *argv[]) {
         pts.push_back(Point(x, y));
     }
     miniDisc(pts);
+
+    Point p1 = Point(83,87);
+    Point p2 = Point(34,37);
+    Point p3 = Point(45,67);
+    makeDiscWith3Point(p1, p2, p3);
+
+    cout << "Done :)\n";
 }
+
