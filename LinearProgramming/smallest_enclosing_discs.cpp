@@ -38,7 +38,6 @@ class Disc {
         }
 };
 
-vector<Disc> D;
 
 /**
  * Make a disc that passes over two points.
@@ -75,66 +74,80 @@ Disc makeDiscWith3Point (Point p1, Point p2, Point p3) {
 
 
 Disc miniDiscWith2Point(vector<Point> pts, Point q1, Point q2) {
-    int n = pts.size();
-    D[0] = makeDiscWith2Points(q1, q2);
-    for (int i = 0; i < n; ++i) {
-        if (D[i].isInside(pts[i])) {
-            D[i+1] = D[i];
-        } else {
-            D[i+1] = makeDiscWith3Point(q1, q2, pts[i]);
-        }
+    int n, k;
+    Disc ans;
+
+    n = pts.size();
+    ans = makeDiscWith2Points(q1, q2);
+
+    for (k = 0; k < n; ++k) {
+        if (!ans.isInside(pts[k])) 
+            ans = makeDiscWith3Point(q1, q2, pts[k]);
     }
-    return D[n-1];
+    return ans;
 }
 
+
 Disc miniDiscWithPoint(vector<Point> pts, Point q) {
-    int n = pts.size();
-    D[0] = makeDiscWith2Points(pts[0], q);
-    for (int i = 1; i < n; ++i) {
-        if (D[i-1].isInside(pts[i])) 
-            D[i] = D[i-1];
-        else {
-            vector<Point> next(pts.begin(), pts.end() + i);
-            D[i] = miniDiscWith2Point(next, pts[i], q);
-        }
+    int n, j;
+    Disc ans;
+
+    n = pts.size();
+    ans = makeDiscWith2Points(pts[0], q);
+
+    for (j = 1; j < n; ++j) {
+        if (!ans.isInside(pts[j])) {
+            vector<Point> next(pts.begin(), pts.begin() + j);
+            ans = miniDiscWith2Point(pts, pts[j], q);
+        } 
     }
-    return D[n-1];
+    return ans;
 }
 
 
 Disc miniDisc(vector<Point> pts) {
-    int n = pts.size();
-    D[1] = makeDiscWith2Points(pts[0], pts[1]);
-    for (int i = 2; i < n; ++i) {
-        if (D[i-1].isInside(pts[i])) 
-            D[i] = D[i-1];
-        else {
+    int n, i;
+    Disc ans;
+
+    n = pts.size();
+    ans = makeDiscWith2Points(pts[0], pts[1]);
+
+    for (i = 2; i < n; ++i) {
+        if (!ans.isInside(pts[i])) {
             vector<Point> next(pts.begin(), pts.begin() + i);
-            D[i] = miniDiscWithPoint(next, pts[i]);
-        }
+            ans = miniDiscWithPoint(next, pts[i]);
+        } 
     }
-    return D[n-1];
+    return ans;
 }
 
 
 int main(int argc, char *argv[]) {
     srand((unsigned int) time (NULL));
-    int n;
+    int n, i;
 
     n = atoi(argv[1]);
     vector<Point> pts;
-    D.resize(101);
 
-    for (int i = 0; i < n; ++i) {
+    if (n < 2) {
+        printf("Error: At least need two points\n");
+        exit(1);
+    }
+
+    for (i = 0; i < n; ++i) {
         float x = rand() % 100, y = rand() % 100;
         pts.push_back(Point(x, y));
     }
 
-    for (int i = 0; i < n; ++i) 
-        printf("(%.1f,%.1f),", pts[i].x, pts[i].y);
+    for (i = 0; i < n; ++i) {
+        printf("(%.1f,%.1f)", pts[i].x, pts[i].y);
+        if (i != n - 1) 
+            printf(",");
+    }
+
     printf("\n");
     Disc ans = miniDisc(pts);
     printf("Disc formula: (x-%.3f)^2+(y-%.3f)^2=%.3f^2\n", ans.x, ans.y, ans.r);
 
-    cout << "Done :)\n";
+    return 0;
 }
