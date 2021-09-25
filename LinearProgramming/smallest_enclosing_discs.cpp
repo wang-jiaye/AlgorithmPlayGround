@@ -38,12 +38,6 @@ class Disc {
         }
 };
 
-
-/**
- * Make a disc that passes over two points.
- * @params: two Points object
- * @return: a Disc object with center (x,y) and radius
- */
 Disc makeDiscWith2Points(Point p1, Point p2) {
     float cx, cy;
 
@@ -52,12 +46,7 @@ Disc makeDiscWith2Points(Point p1, Point p2) {
     return Disc(cx, cy, sqrt((p1.x-cx) * (p1.x-cx) + (p1.y-cy) * (p1.y-cy)));
 }
 
-/**
- * Make a disc that passes over three points. 
- * Reference: http://paulbourke.net/geometry/circlesphere/
- * @params: three Point object
- * @return: a Disc object with center (x,y) and radius
- */
+// Reference: http://paulbourke.net/geometry/circlesphere/
 Disc makeDiscWith3Point (Point p1, Point p2, Point p3) {
     float ma, mb, x, y, r;
     float x1, y1, x2, y2, x3, y3;
@@ -134,6 +123,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // Generate n random 2D points
     for (i = 0; i < n; ++i) {
         float x = rand() % 100, y = rand() % 100;
         pts.push_back(Point(x, y));
