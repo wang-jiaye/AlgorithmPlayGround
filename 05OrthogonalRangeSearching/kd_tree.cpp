@@ -51,10 +51,10 @@ vector<Point> searchKDTree(KDNode* root, pair<Point, Point> R, int depth=0) {
         return {};
     if (depth & 1) {
         splitValue = root->pt.y;
-        min = R.first.x, max = R.second.x;
+        min = R.first.y, max = R.second.y;
     } else {
         splitValue = root->pt.x;
-        min = R.first.y, max = R.second.y;
+        min = R.first.x, max = R.second.x;
     }
 
     if (splitValue < min)
@@ -83,7 +83,7 @@ int main() {
     KDNode *root;
 
     pts = {{7,2},{5,4},{9,6},{4,7},{8,1},{2,3}};
-    R = {{1,0},{6,5}};
+    R = {{1,0},{8,5}};
 
     
     root = buildKDTree(pts, 0);
