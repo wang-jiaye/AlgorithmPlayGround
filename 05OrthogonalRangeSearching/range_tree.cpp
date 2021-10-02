@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#define DIM 4
+#define DIM 10
 
 struct Point {
     int val[DIM];
@@ -13,10 +13,10 @@ struct Point {
 
 struct RangeNode {
     Point val;
-    RangeNode *left, *right, *subTree;
+    RangeNode *left, *right, *assoc;
     RangeNode(Point val_): 
         val(val_), 
-        left(nullptr), right(nullptr), subTree(nullptr) {}
+        left(nullptr), right(nullptr), assoc(nullptr) {}
 };
 
 
@@ -47,22 +47,42 @@ RangeNode* buildNDRangeTree(vector<Point> P, int d=1) {
 
     node->left = buildNDRangeTree(P1, d);
     node->right = buildNDRangeTree(P2, d);
-    node->subTree = buildNDRangeTree(sortedP[d], d + 1);
+
+    sort(P.begin(), P.end(), [d](const Point &a, const Point &b) {
+        return a.val[d] < b.val[d];
+    });
+    node->assoc = buildNDRangeTree(P, d + 1);
     return node;
 }
 
-vector<Point> nDRangeQuery(RangeNode* root, vector<pair<int, int>> R, int d=1) {
-    vector<Point> ans;
-    return ans;
+// Input. A N-dimensional range tree and a range R.
+// Output. All points in the tree that lie in the range.
+vector<Point> nDRangeQuery(RangeNode* root, vector<pair<int, int>> R, int d=0) {
+    if (d >= DIM || !root) 
+        return {};
+
+    RangeNode *splitNode = findSplitNode(root, R[d], d);
+    vector<Point> temp = nDRangeQuery(splitNode->assoc, R, d + 1);
+    int a = R[d].first, b = R[d].second;
+    return temp;
+}
+
+void inOrder(RangeNode* node, int d) {
+    if (!node) return;
+    inOrder(node->left, d);
+    cout << node->val.val[d] << " ";
+    inOrder(node->right, d);
 }
 
 int main(int argc, const char* argv[]) {
     /* srand((unsigned int) time (NULL)); */
     int n, i;
-    vector<Point> P;
+    vector<Point> P, ans;
+    vector<pair<int, int>> R;
     RangeNode* root;
 
-    n = atoi(argv[1]);
+    // n = atoi(argv[1]);
+    n = 20;
     P.resize(n);
 
     // Generate n randome DIM dimensional points
@@ -82,6 +102,21 @@ int main(int argc, const char* argv[]) {
         });
         sortedP[i] = (temp);
     }
-
+    for (auto p: sortedP[0]) {
+        cout << p.val[0] << " ";
+    }
+    cout << endl;
+    for (auto p: sortedP[1]) {
+        cout << p.val[1] << " ";
+    }
+    cout << endl;
     root = buildNDRangeTree(sortedP[0]);
+    printf("===== %d-D Range Tree Construction Complete =====\n", DIM);
+    inOrder(root->right, 0);
+    cout << endl;
+    inOrder(root->assoc->right, 1);
+    cout << endl;
+    /* R = {{100,200}, {2,2000}, {3, 3000}}; */
+    /* ans = nDRangeQuery(root, R); */
+
 }
