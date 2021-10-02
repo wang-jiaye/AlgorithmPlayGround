@@ -22,6 +22,18 @@ struct RangeNode {
 
 vector<vector<Point>> sortedP(DIM);
 
+// Input. A tree and two values, [x, x'] represent the range.
+// Output. The node were the paths to x and x' split, 
+// or the leaf where both paths end.
+RangeNode* findSplitNode(RangeNode* root, pair<int, int> R, int d) {
+    while (root->left != root->right && 
+            (R.second <= root->val.val[d] || R.first > root->val.val[d])) {
+        if (R.second <= root->val.val[d]) root = root->left;
+        else root = root->right;
+    }
+    return root;
+}
+
 // Input. A set P of points in the plane.
 // Output. The root of a N-dimensional range tree.
 RangeNode* buildNDRangeTree(vector<Point> P, int d=1) {
@@ -39,8 +51,13 @@ RangeNode* buildNDRangeTree(vector<Point> P, int d=1) {
     return node;
 }
 
+vector<Point> nDRangeQuery(RangeNode* root, vector<pair<int, int>> R, int d=1) {
+    vector<Point> ans;
+    return ans;
+}
 
 int main(int argc, const char* argv[]) {
+    /* srand((unsigned int) time (NULL)); */
     int n, i;
     vector<Point> P;
     RangeNode* root;
