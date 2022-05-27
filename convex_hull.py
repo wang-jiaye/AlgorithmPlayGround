@@ -78,8 +78,10 @@ def main():
     for pt in points:
         plt.plot(pt.x, pt.y, marker='x', color='r')
 
+    # draw CH
     for i in range(len(hull)):
         plt.plot((hull[i-1].x, hull[i].x), (hull[i-1].y, hull[i].y), color='b')
+
     plt.show()
 
 
