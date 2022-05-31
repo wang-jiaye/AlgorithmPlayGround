@@ -1,5 +1,7 @@
-# CMPT463 Advanced Algorithms
-This repository contains my project of this course and play around of algorithms from the textbook. This course is mostly focused on computational geometry. The textbook we use is [Computational Geometry: Algorithms and Applications](https://www.amazon.ca/Computational-Geometry-Applications-Mark-Berg/dp/3540779736/ref=sr_1_1?dchild=1&keywords=computational+geometry&qid=1630988883&sr=8-1). 
+# Computational Geometry Play Ground
+This repository contains some implementations of computational geometry algorithms
+I learned from [CMPT 463](https://catalogue.usask.ca/CMPT-463).
+The textbook we used is [Computational Geometry: Algorithms and Applications](https://www.amazon.ca/Computational-Geometry-Applications-Mark-Berg/dp/3540779736/ref=sr_1_1?dchild=1&keywords=computational+geometry&qid=1630988883&sr=8-1). 
 
 ### Convex Hull
 ![](https://github.com/wang-jiaye/AlgorithmPlayGround/blob/main/images/convex_hull.png)
