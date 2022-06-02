@@ -54,12 +54,15 @@ class HalfEdge:
         self.w = w
 
     def __str__(self):
-        return f'E(o:({self.v.x},{self.v.y}), d:({self.w.x},{self.w.y})'
+        return f'E(o:({self.v.x},{self.v.y}), d:({self.w.x},{self.w.y}))'
+
+    def __repr__(self):
+        return f'E(o:({self.v.x},{self.v.y}), d:({self.w.x},{self.w.y}))'
 
     def get_distance(self):
         return sqrt((self.v.x - self.w.x) ** 2 + (self.v.y - self.w.y) ** 2)
 
-    def get_angel(self):
+    def get_angle(self):
         dx = self.v.x - self.w.x
         dy = self.v.y - self.w.y
         dist = sqrt(dx * dx + dy * dy)
@@ -82,6 +85,12 @@ class DCEL:
         self.faces = []
 
         self.__build(nodes, edges)
+
+    def get_vertices(self):
+        return list(self.vertices_map.values())
+
+    def get_edges(self):
+        return self.half_edges
 
     def __build(self, points: list, edges: list):
         self.__init_points(points)
@@ -108,6 +117,18 @@ class DCEL:
             self.half_edges.extend([hedge, twin_hedge])
 
     def __init_prev_and_next(self):
+        """Initialize previous and next pointers of each half-edge"""
+        for v in self.vertices_map.values():
+            hedges = sorted(v.incident_edges
+                            , key=lambda e: e.get_angle()
+                            , reverse=True)
+            n = len(hedges)
+            for i in range(n):
+                h1, h2 = hedges[i], hedges[(i + 1) % n]
+                h1.twin.next = h2
+                h2.prev = h1
+
+    def __init_faces(self):
         return
 
     def display(self):
@@ -130,5 +151,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
