@@ -9,7 +9,7 @@ from math import sqrt, acos, pi
 subdivisions of a plane. It contains a record for each vertex, edge, face, and
 the geometric and topological information with additional attributes of the 
 subdivision. This powerful data structure will assist us in triangulation, 
-Voronoi diagram, etc,...
+Voronoi diagram, trapezoidal map, etc,...
 
 Definitions:
     Incident: If a vertex is the endpoint of an edge, then we say that the
@@ -59,6 +59,9 @@ class HalfEdge:
     def __repr__(self):
         return f'E(o:({self.v.x},{self.v.y}), d:({self.w.x},{self.w.y}))'
 
+    def __eq__(self, other):
+        return self.v is other.origin and self.w is other.twin.origin
+
     def get_distance(self):
         return sqrt((self.v.x - self.w.x) ** 2 + (self.v.y - self.w.y) ** 2)
 
@@ -74,8 +77,41 @@ class HalfEdge:
 class Face:
     def __init__(self):
         self.name = None
-        self.outer_component = None  # some HalfEdge on its outer boundary
-        self.inner_component = None  # .. .. .. .. inner ..
+        self.outer_component = []  # some HalfEdge on its outer boundary
+        self.inner_component = []  # .. .. .. .. inner ..
+
+    def __repr__(self):
+        return f'f{self.name}'
+
+    def __str__(self):
+        return f'f{self.name}'
+
+
+class BoundingBox(Face):
+    """Container of our DCEL. Itself is a Face, too."""
+    def __init__(self, ul: Vertex, dl: Vertex, ur: Vertex, dr: Vertex):
+        super().__init__()
+        self.name = "Bounding Box"
+        self.ul = ul
+        self.dl = dl
+        self.ur = ur
+        self.dr = dr
+
+        self.left_seg = self.right_seg = self.up_seg = self.down_seg = None
+
+    def __init_seg(self, v: Vertex, w: Vertex):
+        hedge = HalfEdge(v, w)
+        twin_hedge = HalfEdge(w, v)
+        hedge.twin = twin_hedge
+        twin_hedge.twin = hedge
+
+    @property
+    def vertices(self):
+        return [self.ul, self.dl, self.ur, self.dr]
+
+    @property
+    def segments(self):
+        return [self.left_seg, self.right_seg, self.up_seg, self.down_seg]
 
 
 class DCEL:
@@ -83,6 +119,7 @@ class DCEL:
         self.vertices_map = {}
         self.half_edges = []
         self.faces = []
+        self.bounding_box = None
 
         self.__build(nodes, edges)
 
@@ -96,12 +133,30 @@ class DCEL:
         self.__init_points(points)
         self.__init_edges(edges)
         self.__init_prev_and_next()
+        self.__init_bounding_box()
+        self.__init_faces()
+
+    def __init_bounding_box(self):
+        min_x, max_x = float('inf'), float('-inf')
+        min_y, max_y = float('inf'), float('-inf')
+        for v in self.vertices_map.values():
+            min_x, min_y = min(min_x, v.x), min(min_y, v.y)
+            max_x, max_y = max(max_x, v.x), max(max_y, v.y)
+
+        self.bounding_box = BoundingBox(
+            Vertex('ul', min_x - 1, max_y + 1)
+            , Vertex('ll', min_x - 1, min_y - 1)
+            , Vertex('ur', max_x + 1, max_y + 1)
+            , Vertex('lr', max_x + 1, min_y - 1)
+        )
 
     def __init_points(self, points: list):
+        """Convert each coordinate into a Vertex object"""
         for name, x, y in points:
             self.vertices_map[name] = Vertex(name, x, y)
 
     def __init_edges(self, edges: list):
+        """Split each edge into a half-edge and its twin"""
         for v, w in edges:
             origin = self.vertices_map[v]
             destination = self.vertices_map[w]
@@ -119,21 +174,38 @@ class DCEL:
     def __init_prev_and_next(self):
         """Initialize previous and next pointers of each half-edge"""
         for v in self.vertices_map.values():
+            # sort the half-edges in clockwise order.
             hedges = sorted(v.incident_edges
                             , key=lambda e: e.get_angle()
                             , reverse=True)
             n = len(hedges)
             for i in range(n):
-                h1, h2 = hedges[i], hedges[(i + 1) % n]
-                h1.twin.next = h2
-                h2.prev = h1
+                x, y = hedges[i], hedges[(i + 1) % n]
+                x.twin.next = y
+                y.prev = x
 
     def __init_faces(self):
-        return
+        face_label = 1  # 0 is the outer component
+        for hedge in self.half_edges:
+            if not hedge.incident_face:
+                face = Face()
+                face.name = face_label
+                self.faces.append(face)
+
+                hedge.incident_face = face
+                temp = hedge
+                while not temp.next == hedge:
+                    temp.incident_face = face
+                    temp = temp.next
+                face_label += 1
+            # print(hedge, hedge.incident_face)
 
     def display(self):
         for i, vertex in self.vertices_map.items():
             plt.plot(vertex.x, vertex.y, marker='o', color='r')
+
+        for bv in self.bounding_box.vertices:
+            plt.plot(bv.x, bv.y, marker='x', color='g')
 
         for half_edge in self.half_edges:
             x1, y1 = half_edge.origin.x, half_edge.origin.y
